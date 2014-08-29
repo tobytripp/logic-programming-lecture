@@ -1,0 +1,645 @@
+#+Title:  Logic / Relational Programming
+#+Author: Toby Tripp
+#+Email:  toby@tripp.net
+
+# moon solarized night
+#+REVEAL_THEME: moon
+#+REVEAL_EXTRA_CSS: logic.css
+#+OPTIONS: num:nil
+
+# Export to reveal.js with C-c C-e R R
+
+* "We Don't Know How to Compute"
+
+-- [[http://www.infoq.com/presentations/We-Really-Dont-Know-How-To-Compute][Gerald Sussman]] [fn:6]
+
+#+CAPTION: Kanizsa's Triangle Illusion
+#+ATTR_HTML: :alt Kanizsa Triangle :title Optical Illusion :height 550px :style background: #fff
+file:images/kanizsa.png
+
+# [[file:images/Kanizsa_triangle.svg]]
+
+# It takes the average human less than 200ms to see the "invisible"
+# triangle in the above image. There is no known computation that can
+# perform the same operation with as low latency (30-40 steps).
+
+# The future of computing and parallelism…
+
+# We need to explore new modes of computation
+
+* The “Big Three” Paradigms
+
+#+ATTR_REVEAL: :frag roll-in
+Of which most of us use one or two…
+
+** Imperative
+
+#+BEGIN_SRC C
+#include<stdio.h>
+
+int main (int argc, char ** argv) {
+  println ("Hello World!");
+}
+#+END_SRC
+
+#+ATTR_REVEAL: :frag roll-in
+  - Primary element of expression:  *instruction*.
+  - Variables are: /references/ to a value in memory
+  - Programs are expressed as a series of /steps/ for the computer to perform.
+
+
+** Functional
+#+BEGIN_SRC haskell
+   quicksort :: Ord a => [a] -> [a]
+
+   quicksort []     = []
+   quicksort (p:xs) =
+     quicksort [y | y <- xs, y <= p] ++ [p] ++ quicksort [y | y <- xs, y > p]
+#+END_SRC
+
+#+ATTR_REVEAL: :frag roll-in
+  - Primary element of expression:  *function*.
+  - Variables are: labels for /fixed values/
+  - Programs are expressed as a set of /functions/ accepting and returning data.
+
+
+** Logical
+#+BEGIN_SRC prolog
+  partition( [], _, [], [] ).
+  partition( [X|Xs], Pivot, Smalls, Bigs ) :-
+      (   X @< Pivot ->
+          Smalls = [X|Rest],
+          partition( Xs, Pivot, Rest, Bigs )
+      ;   Bigs = [X|Rest],
+          partition( Xs, Pivot, Smalls, Rest )
+      ).
+
+  quicksort( [] )     --> [].
+  quicksort( [X|Xs] ) -->
+      { partition( Xs, X, Smaller, Bigger ) },
+      quicksort( Smaller ), [X], quicksort( Bigger).
+#+END_SRC
+
+or
+
+#+BEGIN_SRC sql
+  SELECT name FROM users WHERE lang='logical';
+#+END_SRC
+
+** Logical
+
+#+BEGIN_SRC prolog
+  quicksort( [] )     --> [].
+  quicksort( [X|Xs] ) -->
+      { partition( Xs, X, Smaller, Bigger ) },
+      quicksort( Smaller ), [X], quicksort( Bigger).
+#+END_SRC
+
+#+ATTR_REVEAL: :frag roll-in
+  - Primary element of expression:  *goal*.
+  - Variables are: labels for a potential /set/ of matching values
+  - Programs are expressed as sets of /facts/ queried through /goals/.
+
+* The Problem of Expression
+
+#+BEGIN_QUOTE
+    The Expression Problem is a new name for an old problem.
+
+    The goal is to define a datatype by cases, where one can add new
+    cases to the datatype and new functions over the datatype, without
+    recompiling existing code, and while retaining static type safety
+    (e.g., no casts).
+#+END_QUOTE
+ Philip Wadler [fn:4]
+
+# Most languages/paradigms can make one change but not the other.
+# One could call this the holy grail of language design.
+
+** Example (FP)
+
+#+BEGIN_SRC scala
+  sealed trait Expr
+  case class Add( e1: Expr, e2: Expr ) extends Expr
+  case class Sub( e1: Expr, e2: Expr ) extends Expr
+  case class Num( n: Int ) extends Expr
+
+  def value( e: Expr ): Int = e match {
+    case Add( e1, e2 ) =>
+      value( e1 ) + value( e2 )
+
+    case Sub( e1, e2 ) =>
+      value( e1 ) - value( e2 )
+
+    case Num( n ) => n
+  }
+#+END_SRC
+
+
+*** Example
+
+#+CAPTION: …in Haskell
+#+BEGIN_SRC haskell
+  data Expression = Number Int
+                  | Add Expression Expression
+                  | Sub Expression Expression
+
+  value (Add e1 e2) = (value e1) + (value e2)
+  value (Sub e1 e2) = (value e1) - (value e2)
+  value (Number e)  = e
+#+END_SRC
+
+# The compiler enforces that all cases are covered
+
+# Also:
+#   value e =
+#     case e of
+#       Add e1 e2 -> (value e1) + (value e2)
+#       Sub e1 e2 -> (value e1) - (value e2)
+#       Mul e1 e2 -> (value e1) * (value e2)
+#       Number e  -> e
+
+#+REVEAL: split
+
+#+CAPTION: Adding a new function…
+#+BEGIN_SRC haskell
+  data Expression = Number Int
+                  | Add Expression Expression
+                  | Sub Expression Expression
+
+  value (Number e)  = e
+  value (Add e1 e2) = (value e1) + (value e2)
+  value (Sub e1 e2) = (value e1) - (value e2)
+
+  increment e = (value e) + 1
+#+END_SRC
+
+#+ATTR_REVEAL: :frag roll-in
+Notice all the necessary changes are /additions/, and changes in the
+new function are localized.
+
+#+REVEAL: split
+
+#+CAPTION: Adding a new Case…
+#+BEGIN_SRC haskell
+    data Expression = Number Int
+                    | Add Expression Expression
+                    | Sub Expression Expression
+                    | Mul Expression Expression
+
+    value (Number e)  = e
+    value (Add e1 e2) = (value e1) + (value e2)
+    value (Sub e1 e2) = (value e1) - (value e2)
+    value (Mul e1 e2) = (value e1) * (value e2)
+#+END_SRC
+
+#+ATTR_REVEAL: :frag roll-in
+Extending the data-type requires changes to /any/ function that
+operates over that type.
+
+** In Functional Programming
+
+FP tends to optimize adding functions over the datatype at the expense
+of easily adding new cases.
+
+** In Object-Oriented Programming
+
+The trade-off is reversed: it is easier to add new cases (sub-type
+polymorphism), but difficult to add new functions that operate over
+the entire data-type.
+
+* Elements of Logical Programming
+** Unification
+# Edit source with C-c '
+# run-scheme ;; start scheme buffer
+# C-x C-e    ;; run last s-expression in scheme buffer
+
+#+BEGIN_SRC scheme
+  (load "mk.scm")
+  (load "mkprelude.scm")
+
+  (run* (q)
+       (== 3 q))
+
+  (run* (q)
+       (== q 3))
+#+END_SRC
+
+The Rules of Unification:
+1. If =x= is *fresh*, =(≡ v x)=  succeeds and associates =x= with =v=.
+2. =(≡ v w)= is the same as =(≡ w v)=.[fn:1]
+
+
+** Disjunction
+
+#+BEGIN_QUOTE
+  “To get more values from conde, pretend that the successful conde line
+  has failed, refreshing all variables that got an association from
+  that line.”
+#+END_QUOTE
+
+#+BEGIN_SRC scheme
+  (run* (r)
+    (fresh (x y)
+      (conde
+        ((== 'split x) (== 'pea y))
+        ((== 'navy x)  (== 'bean y))
+        (else fail))
+      (== (cons x (cons y '())) r)))
+#+END_SRC
+
+# =conde= is form similar to scheme's =cond=, but it works on goals.
+# If the first expression in a pair succeeds, the second is evaluated.
+
+#+ATTR_REVEAL: :frag roll-in
+#+BEGIN_SRC scheme
+; ((split pea) (navy bean))
+#+END_SRC
+
+*** (In Prolog)
+
+Prolog defines things a bit differently.  Prolog segregates the
+concepts of /Facts/ and /Queries/.
+
+#+BEGIN_SRC prolog
+  soup( split, pea ).
+  soup( navy, bean ).
+#+END_SRC
+
+#+BEGIN_SRC prolog
+  | ?- soup( X, Y ).
+  soup( X, Y ).
+
+  X = split
+  Y = pea
+
+  X = navy
+  Y = bean
+#+END_SRC
+
+
+** Search
+
+[[file:images/LogicSearch.png]]
+
+#+BEGIN_SRC scheme
+  (fresh (x y)
+         (conde
+          ((== 'split x) (== 'pea y))
+          ((== 'navy x)  (== 'bean y))
+          (else fail)))
+#+END_SRC
+
+* Prolog
+
+General purpose logic programming language developed in 1972.
+
+# Abbreviation of "Programming with Logic"
+
+#   - implication =:-=
+#   - conjunction ,
+#   - disjunction =;=
+#   - variable    =Var=
+#   - atom        =var=
+#   - number      =2=
+
+** Atoms
+
+#+BEGIN_SRC prolog
+  1.                              % numbers
+  atom.                           % simple
+  'an atom'.                      % quoted
+#+END_SRC
+
+** Variables
+Begin with an Upper-case letter.
+#+BEGIN_SRC prolog
+  X.
+  X1.
+  C_3.
+#+END_SRC
+
+** Facts
+# Facts can be considered to be Rules with no Body, i.e., a Rule
+# whose antecedent conditions are empty and therefore always true.
+
+#+BEGIN_SRC prolog
+  cat( sylvester ) :- true.    % also called a `complex term`
+  cat( tom ).                  % synonymous with above
+
+  dog( bill ).
+  mouse( jerry ).
+#+END_SRC
+
+
+** Rules
+
+#+BEGIN_SRC prolog
+  animal( X ) :- cat( X ).     % Given X is a cat,
+                               % X is an animal.
+#+END_SRC
+
+** Terms may be recursive
+
+Should this /unify/?
+
+# `=` is Prolog's unification operator.
+
+#+BEGIN_SRC prolog
+  father(X)  =  X.
+#+END_SRC
+
+#+ATTR_REVEAL: :frag roll-in
+Yes.
+
+#+ATTR_REVEAL: :frag roll-in
+To what?
+
+#+ATTR_REVEAL: :frag roll-in
+…it depends. The expression is defined to be unifiable, but its
+display is implementation-dependent. [fn:2]
+
+
+# What is displayed will vary based on the prolog implementation, but
+# any of them will allow the query to unify.
+#
+# SWI-Prolog will answer X = father(X).
+#
+# gprolog will refuse to output the unification, but will still
+# return `yes`, indicating that the expression unified.
+#
+# Other implementations may try to display it as something like:
+#    X  =  father(father(father(father(...))))))))
+
+** Queries
+
+#+BEGIN_SRC prolog
+  ?- cat( X ).
+  X = sylvester
+  X = tom
+#+END_SRC
+
+** Lists
+
+#+BEGIN_SRC prolog
+    [1, 2, a].
+    [1, a( 1, 2 ), 3].
+    [A, b, c].
+
+    | ?- [1,2,3] = [A|Tail].
+    A = 1
+    Tail = [2,3]
+
+    | ?- [1,2,3] = [A|[B|Tail]].
+
+    A = 1
+    B = 2
+    Tail = [3]
+#+END_SRC
+
+** Append
+Let's consider a definition of Prolog's append/3: [fn:2]
+#+BEGIN_SRC prolog
+  append( [], L, L ).
+  append( [H|T], L2, [H|L3] ) :- append( T, L2, L3 ).
+#+END_SRC
+
+# Demonstrates the Head|Tail list deconstruction.
+
+# Read as:
+#   appending the empty list to any list L results in the list L.
+#
+#   when we append a non-empty list [H|T] with a list L2, we get
+#     the list whose head is H and
+#     whose tail is the result of appending T with L2 .
+#
+
+** Using Append
+
+Because of the nature of logical programming, append/3
+can be used to /break-up/ lists:
+#+BEGIN_SRC prolog
+  append( X, Y, [a,b,c,d] ).
+
+  X  =  []
+  Y  =  [a,b,c,d]
+
+  X  =  [a]
+  Y  =  [b,c,d]
+
+  X  =  [a,b]
+  Y  =  [c,d]
+
+  X  =  [a,b,c]
+  Y  =  [d]
+
+  X  =  [a,b,c,d]
+  Y  =  []
+#+END_SRC
+
+Goals in a logic language can be run /backward/.
+
+** Permutation
+
+#+BEGIN_SRC prolog
+  permutation( [1,2,3], L ).
+
+  L = [1,2,3]
+  L = [1,3,2]
+  L = [2,1,3]
+  L = [2,3,1]
+  L = [3,1,2]
+  L = [3,2,1]
+
+  permutation( [1, A, 3], [3, 2, 1] ).
+
+  A = 2
+#+END_SRC
+
+/Permutation/, in Prolog, can be defined in terms of /append/.
+
+* Logic Programming Applied
+
+** To Computer Science
+
+  - Compilers
+  - Type inferencers and verifiers
+  - Refactoring tools
+  - Natural language processing
+  - Theorem Solvers/Provers
+
+** To programming
+
+  - Rules engines
+  - 3D graphics (scene graph construction and validation)
+
+
+** To …Alchemy?
+
+#+CAPTION: (Examples are hard…)
+#+ATTR_HTML: :alt Skyrim Alchemy :title Action! :height 500px
+[[file:images/SR_Alchemy_Lab.jpg]]
+
+*** Effects (Facts)
+
+#+BEGIN_SRC prolog
+  effect( blisterwort, damage_stamina ).
+  effect( blisterwort, fortify_smithing ).
+  effect( blisterwort, frenzy ).
+  effect( blisterwort, restore_health ).
+#+END_SRC
+
+*** Potions (Rules)
+
+#+BEGIN_SRC prolog
+  potion( IngredientA, IngredientB ) :-
+      potion( IngredientA, IngredientB, _ ).
+
+  potion( IngredientA, IngredientB, Effect ) :-
+      effect( IngredientA, Effect ),
+      effect( IngredientB, Effect ),
+      IngredientA \= IngredientB.
+#+END_SRC
+
+*** What Can I Mix With Wheat?
+
+#+BEGIN_SRC prolog
+  | ?- potion( wheat, B ).
+
+  B = creep_cluster ? ;
+
+  B = daedra_heart ? ;
+
+  B = frost_mirriam ? ;
+
+  B = giants_toe ?
+#+END_SRC
+
+*** …and What Will I Get?
+
+#+BEGIN_SRC prolog
+| ?- potion( wheat, B, E ).
+
+B = creep_cluster
+E = damage_stamina_regen ? ;
+
+B = daedra_heart
+E = damage_stamina_regen ? ;
+
+B = frost_mirriam
+E = damage_stamina_regen ?
+
+(1 ms) yes
+#+END_SRC
+
+
+*** Lists
+
+#+BEGIN_SRC prolog
+  mixes( [], _, _, _ ) :- fail.
+  mixes( L, Ia, Ib, E ) :-
+      permutation( L, [Ia|[Ib|_]] ),
+      potion( Ia, Ib, E ).
+#+END_SRC
+
+*** What Can I Make With This Stuff?
+
+#+BEGIN_SRC prolog
+  | ?- mixes( [wheat, blisterwort, daedra_heart], A, B, E ).
+
+  A = wheat
+  B = blisterwort
+  E = restore_health ? ;
+
+  A = wheat
+  B = daedra_heart
+  E = damage_stamina_regen ? ;
+
+  A = wheat
+  B = daedra_heart
+  E = restore_health ?
+
+  yes
+#+END_SRC
+
+
+* Datalog
+
+A dialect of Prolog for database queries.
+
+** Facts (Datom)
+
+Datomic stores its data in Sets of Tuples of the form:
+
+#+BEGIN_SRC clojure
+  [entity attribute value transaction]
+#+END_SRC
+
+#+ATTR_REVEAL: :frag roll-in
+#+BEGIN_SRC clojure
+  ; An example database
+  [[sally :age  32]
+   [bob   :age  32]
+   [phil  :age  19]
+   [sally :eyes blue]
+   [bob   :eyes hazel]
+   [phil  :eyes brown]]
+#+END_SRC
+
+** Queries
+
+Variables are prefixed with a "?"
+
+#+BEGIN_SRC clojure
+  [:find ?e :where [?e :age 32]]
+#+END_SRC
+
+#+BEGIN_QUOTE
+Find the entity, ?e, that unifies with the tuple [?e :age 32].
+#+END_QUOTE
+
+#+ATTR_REVEAL: :frag roll-in
+#+BEGIN_SRC clojure
+  ;; Result:
+  [[bob], [sally]]
+#+END_SRC
+[fn:5]
+
+** Unification
+
+Once a variable is unified, it keeps its value in all clauses:
+
+#+BEGIN_SRC clojure
+  [:find ?e ?c
+   :where [?e :age 32] [?e :eyes ?c]]
+#+END_SRC
+
+#+ATTR_REVEAL: :frag roll-in
+#+BEGIN_SRC clojure
+  ;; Result:
+  [[bob hazel], [sally blue]]
+#+END_SRC
+
+** Other Features
+
+  - Rules
+  - Built-in Functions and Predicates
+  - Calls to Java or Clojure functions
+  - Multiple input sources (query two dbs at once)
+
+
+* Resources
+
+  - /The Reasoned Schemer/
+  - /Learn Prolog Now/
+  - Daniel Spiewak - /Living in a Post-Functional World/
+  - Wikipedia - /Expression Problem/
+  - /Datomic Queries and Rules with Datalog/
+  - Gerald Sussman - /We Really Don't Know How to Compute!/
+
+* Footnotes
+[fn:6] [[http://infoq.com/presentations/We-Really-Dont-Know-How-To-Compute][Gerald Sussman - We Really Don't Know How to Compute!]]
+[fn:1] [[http://mitpress.mit.edu/books/reasoned-schemer][/The Reasoned Schemer/]]
+[fn:2] [[http://www.learnprolognow.org][/Learn Prolog Now/]]
+[fn:3] [[http://vimeo.com/user18356272/review/66548717/3531875329][Daniel Spiewak - Living in a Post-Functional World]]
+[fn:4] [[http://en.wikipedia.org/wiki/Expression_problem][Wikipedia - Expression Problem]]
+[fn:5] [[http://docs.datomic.com/query.html][Datomic Queries and Rules with Datalog]]

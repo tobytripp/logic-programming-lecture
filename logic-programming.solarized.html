@@ -1,0 +1,1039 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Logic / Relational Programming</title>
+<meta name="author" content="(Toby Tripp)"/>
+<link rel="stylesheet" href="./reveal.js/css/reveal.min.css"/>
+<link rel="stylesheet" href="./reveal.js/css/theme/solarized.css" id="theme"/>
+<link rel="stylesheet" href="logic.css"/>
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = './reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+<link rel="stylesheet" href="./reveal.js/plugin/highlight/styles/zenburn.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section>
+<h1>Logic / Relational Programming</h1>
+<h2>Toby Tripp</h2>
+<h2><a href="mailto:toby@tripp.net">toby@tripp.net</a></h2>
+<h2></h2></section>
+<section>
+<h2>Table of Contents</h2><ul>
+<li>
+<a href="#sec-1">"We Don't Know How to Compute"</a>
+</li>
+<li>
+<a href="#sec-2">The “Big Three” Paradigms</a>
+<ul>
+<li>
+<a href="#sec-2-1">Imperative</a>
+</li>
+<li>
+<a href="#sec-2-2">Functional</a>
+</li>
+<li>
+<a href="#sec-2-3">Logical</a>
+</li>
+<li>
+<a href="#sec-2-4">Logical</a>
+</li>
+</ul>
+<li>
+<a href="#sec-3">The Problem of Expression</a>
+<ul>
+<li>
+<a href="#sec-3-1">Example (FP)</a>
+<ul>
+<li>
+<a href="#sec-3-1-1">Example</a>
+</li>
+</ul>
+<li>
+<a href="#sec-3-2">In Functional Programming</a>
+</li>
+<li>
+<a href="#sec-3-3">In Object-Oriented Programming</a>
+</li>
+</ul>
+<li>
+<a href="#sec-4">Elements of Logical Programming</a>
+<ul>
+<li>
+<a href="#sec-4-1">Unification</a>
+</li>
+<li>
+<a href="#sec-4-2">Disjunction</a>
+<ul>
+<li>
+<a href="#sec-4-2-1">(In Prolog)</a>
+</li>
+</ul>
+<li>
+<a href="#sec-4-3">Search</a>
+</li>
+</ul>
+<li>
+<a href="#sec-5">Prolog</a>
+<ul>
+<li>
+<a href="#sec-5-1">Atoms</a>
+</li>
+<li>
+<a href="#sec-5-2">Variables</a>
+</li>
+<li>
+<a href="#sec-5-3">Facts</a>
+</li>
+<li>
+<a href="#sec-5-4">Rules</a>
+</li>
+<li>
+<a href="#sec-5-5">Terms may be recursive</a>
+</li>
+<li>
+<a href="#sec-5-6">Queries</a>
+</li>
+<li>
+<a href="#sec-5-7">Lists</a>
+</li>
+<li>
+<a href="#sec-5-8">Append</a>
+</li>
+<li>
+<a href="#sec-5-9">Using Append</a>
+</li>
+<li>
+<a href="#sec-5-10">Permutation</a>
+</li>
+</ul>
+<li>
+<a href="#sec-6">Logic Programming Applied</a>
+<ul>
+<li>
+<a href="#sec-6-1">To Computer Science</a>
+</li>
+<li>
+<a href="#sec-6-2">To programming</a>
+</li>
+<li>
+<a href="#sec-6-3">To …Alchemy?</a>
+<ul>
+<li>
+<a href="#sec-6-3-1">Effects (Facts)</a>
+</li>
+<li>
+<a href="#sec-6-3-2">Potions (Rules)</a>
+</li>
+<li>
+<a href="#sec-6-3-3">What Can I Mix With Wheat?</a>
+</li>
+<li>
+<a href="#sec-6-3-4">…and What Will I Get?</a>
+</li>
+<li>
+<a href="#sec-6-3-5">Lists</a>
+</li>
+<li>
+<a href="#sec-6-3-6">What Can I Make With This Stuff?</a>
+</li>
+</ul>
+<li>
+<a href="#sec-7">Datalog</a>
+<ul>
+<li>
+<a href="#sec-7-1">Facts (Datom)</a>
+</li>
+<li>
+<a href="#sec-7-2">Queries</a>
+</li>
+<li>
+<a href="#sec-7-3">Unification</a>
+</li>
+<li>
+<a href="#sec-7-4">Other Features</a>
+</li>
+</ul>
+<li>
+<a href="#sec-8">Resources</a>
+</li>
+</ul>
+</section>
+
+<section>
+<section id="sec-1" >
+
+<h2>"We Don't Know How to Compute"</h2>
+<p>
+&#x2013; <a href="http://www.infoq.com/presentations/We-Really-Dont-Know-How-To-Compute">Gerald Sussman</a> <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
+</p>
+
+<img src="images/kanizsa.png" alt="Kanizsa Triangle" title="Optical Illusion" height="550px" style="background: #fff" />
+</section>
+
+</section>
+<section>
+<section id="sec-2" >
+
+<h2>The “Big Three” Paradigms</h2>
+<p class="fragment roll-in">
+Of which most of us use one or two…
+</p>
+
+</section>
+<section id="sec-2-1" >
+
+<h3>Imperative</h3>
+<div class="org-src-container">
+
+<pre  class="src src-C"><span style="color: #268bd2; font-style: italic;">#include</span><span style="color: #2aa198;">&lt;stdio.h&gt;</span>
+
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">main</span> (<span style="color: #b58900;">int</span> <span style="color: #268bd2;">argc</span>, <span style="color: #b58900;">char</span> ** <span style="color: #268bd2;">argv</span>) {
+  println (<span style="color: #2aa198;">"Hello World!"</span>);
+}
+</pre>
+</div>
+
+<ul class="org-ul">
+<li class="fragment roll-in">Primary element of expression:  <b>instruction</b>.
+</li>
+<li class="fragment roll-in">Variables are: <i>references</i> to a value in memory
+</li>
+<li class="fragment roll-in">Programs are expressed as a series of <i>steps</i> for the computer to perform.
+</li>
+</ul>
+
+
+</section>
+<section id="sec-2-2" >
+
+<h3>Functional</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #268bd2;">quicksort</span> <span style="color: #268bd2;">::</span> <span style="color: #b58900;">Ord</span> a <span style="color: #268bd2;">=&gt;</span> [a] <span style="color: #268bd2;">-&gt;</span> [a]
+
+<span style="color: #268bd2;">quicksort</span> <span style="color: #b58900;">[]</span>     <span style="color: #268bd2;">=</span> <span style="color: #b58900;">[]</span>
+<span style="color: #268bd2;">quicksort</span> (p<span style="color: #b58900;">:</span>xs) <span style="color: #268bd2;">=</span>
+  quicksort [y <span style="color: #268bd2;">|</span> y <span style="color: #268bd2;">&lt;-</span> xs, y <span style="color: #268bd2;">&lt;=</span> p] <span style="color: #268bd2;">++</span> [p] <span style="color: #268bd2;">++</span> quicksort [y <span style="color: #268bd2;">|</span> y <span style="color: #268bd2;">&lt;-</span> xs, y <span style="color: #268bd2;">&gt;</span> p]
+</pre>
+</div>
+
+<ul class="org-ul">
+<li class="fragment roll-in">Primary element of expression:  <b>function</b>.
+</li>
+<li class="fragment roll-in">Variables are: labels for <i>fixed values</i>
+</li>
+<li class="fragment roll-in">Programs are expressed as a set of <i>functions</i> accepting and returning data.
+</li>
+</ul>
+
+
+</section>
+<section id="sec-2-3" >
+
+<h3>Logical</h3>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">partition</span>( <span style="color: #859900; font-weight: bold;">[]</span>, <span style="color: #268bd2;">_</span>, <span style="color: #859900; font-weight: bold;">[]</span>, <span style="color: #859900; font-weight: bold;">[]</span> ).
+<span style="color: #268bd2;">partition</span>( <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">X</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">Xs</span><span style="color: #859900; font-weight: bold;">]</span>, <span style="color: #268bd2;">Pivot</span>, <span style="color: #268bd2;">Smalls</span>, <span style="color: #268bd2;">Bigs</span> ) :-
+    (   <span style="color: #268bd2;">X</span> @&lt; <span style="color: #268bd2;">Pivot</span> <span style="color: #859900; font-weight: bold;">-&gt;</span>
+        <span style="color: #268bd2;">Smalls</span> = <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">X</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">Rest</span><span style="color: #859900; font-weight: bold;">]</span>,
+        partition( <span style="color: #268bd2;">Xs</span>, <span style="color: #268bd2;">Pivot</span>, <span style="color: #268bd2;">Rest</span>, <span style="color: #268bd2;">Bigs</span> )
+    <span style="color: #859900; font-weight: bold;">;</span>   <span style="color: #268bd2;">Bigs</span> = <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">X</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">Rest</span><span style="color: #859900; font-weight: bold;">]</span>,
+        partition( <span style="color: #268bd2;">Xs</span>, <span style="color: #268bd2;">Pivot</span>, <span style="color: #268bd2;">Smalls</span>, <span style="color: #268bd2;">Rest</span> )
+    ).
+
+<span style="color: #268bd2;">quicksort</span>( <span style="color: #859900; font-weight: bold;">[]</span> )     --&gt; <span style="color: #859900; font-weight: bold;">[]</span>.
+<span style="color: #268bd2;">quicksort</span>( <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">X</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">Xs</span><span style="color: #859900; font-weight: bold;">]</span> ) --&gt;
+    <span style="color: #859900; font-weight: bold;">{</span> partition( <span style="color: #268bd2;">Xs</span>, <span style="color: #268bd2;">X</span>, <span style="color: #268bd2;">Smaller</span>, <span style="color: #268bd2;">Bigger</span> ) <span style="color: #859900; font-weight: bold;">}</span>,
+    quicksort( <span style="color: #268bd2;">Smaller</span> ), <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">X</span><span style="color: #859900; font-weight: bold;">]</span>, quicksort( <span style="color: #268bd2;">Bigger</span>).
+</pre>
+</div>
+
+<p>
+or
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-sql">SELECT name FROM users WHERE lang=<span style="color: #2aa198;">'logical'</span>;
+</pre>
+</div>
+
+</section>
+<section id="sec-2-4" >
+
+<h3>Logical</h3>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">quicksort</span>( <span style="color: #859900; font-weight: bold;">[]</span> )     --&gt; <span style="color: #859900; font-weight: bold;">[]</span>.
+<span style="color: #268bd2;">quicksort</span>( <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">X</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">Xs</span><span style="color: #859900; font-weight: bold;">]</span> ) --&gt;
+    <span style="color: #859900; font-weight: bold;">{</span> partition( <span style="color: #268bd2;">Xs</span>, <span style="color: #268bd2;">X</span>, <span style="color: #268bd2;">Smaller</span>, <span style="color: #268bd2;">Bigger</span> ) <span style="color: #859900; font-weight: bold;">}</span>,
+    quicksort( <span style="color: #268bd2;">Smaller</span> ), <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">X</span><span style="color: #859900; font-weight: bold;">]</span>, quicksort( <span style="color: #268bd2;">Bigger</span>).
+</pre>
+</div>
+
+<ul class="org-ul">
+<li class="fragment roll-in">Primary element of expression:  <b>goal</b>.
+</li>
+<li class="fragment roll-in">Variables are: labels for a potential <i>set</i> of matching values
+</li>
+<li class="fragment roll-in">Programs are expressed as sets of <i>facts</i> queried through <i>goals</i>.
+</li>
+</ul>
+</section>
+
+</section>
+<section>
+<section id="sec-3" >
+
+<h2>The Problem of Expression</h2>
+<blockquote>
+<p>
+The Expression Problem is a new name for an old problem.
+</p>
+
+<p>
+The goal is to define a datatype by cases, where one can add new
+cases to the datatype and new functions over the datatype, without
+recompiling existing code, and while retaining static type safety
+(e.g., no casts).
+</p>
+</blockquote>
+<p>
+Philip Wadler <sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>
+</p>
+
+</section>
+<section id="sec-3-1" >
+
+<h3>Example (FP)</h3>
+<div class="org-src-container">
+
+<pre  class="src src-scala">sealed trait Expr
+case class Add( e1: Expr, e2: Expr ) extends Expr
+case class Sub( e1: Expr, e2: Expr ) extends Expr
+case class Num( n: Int ) extends Expr
+
+def value( e: Expr ): Int = e match {
+  case Add( e1, e2 ) =&gt;
+    value( e1 ) + value( e2 )
+
+  case Sub( e1, e2 ) =&gt;
+    value( e1 ) - value( e2 )
+
+  case Num( n ) =&gt; n
+}
+</pre>
+</div>
+
+
+</section>
+<section id="sec-3-1-1" >
+
+<h4>Example</h4>
+<div class="org-src-container">
+<label class="org-src-name">…in Haskell</label>
+<pre  class="src src-haskell"><span style="color: #859900; font-weight: bold;">data</span> <span style="color: #b58900;">Expression</span> <span style="color: #268bd2;">=</span> <span style="color: #b58900;">Number</span> <span style="color: #b58900;">Int</span>
+                <span style="color: #268bd2;">|</span> <span style="color: #b58900;">Add</span> <span style="color: #b58900;">Expression</span> <span style="color: #b58900;">Expression</span>
+                <span style="color: #268bd2;">|</span> <span style="color: #b58900;">Sub</span> <span style="color: #b58900;">Expression</span> <span style="color: #b58900;">Expression</span>
+
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Add</span> e1 e2) <span style="color: #268bd2;">=</span> (value e1) <span style="color: #268bd2;">+</span> (value e2)
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Sub</span> e1 e2) <span style="color: #268bd2;">=</span> (value e1) <span style="color: #268bd2;">-</span> (value e2)
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Number</span> e)  <span style="color: #268bd2;">=</span> e
+</pre>
+</div>
+
+</section>
+<section>
+
+<div class="org-src-container">
+<label class="org-src-name">Adding a new function…</label>
+<pre  class="src src-haskell"><span style="color: #859900; font-weight: bold;">data</span> <span style="color: #b58900;">Expression</span> <span style="color: #268bd2;">=</span> <span style="color: #b58900;">Number</span> <span style="color: #b58900;">Int</span>
+                <span style="color: #268bd2;">|</span> <span style="color: #b58900;">Add</span> <span style="color: #b58900;">Expression</span> <span style="color: #b58900;">Expression</span>
+                <span style="color: #268bd2;">|</span> <span style="color: #b58900;">Sub</span> <span style="color: #b58900;">Expression</span> <span style="color: #b58900;">Expression</span>
+
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Number</span> e)  <span style="color: #268bd2;">=</span> e
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Add</span> e1 e2) <span style="color: #268bd2;">=</span> (value e1) <span style="color: #268bd2;">+</span> (value e2)
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Sub</span> e1 e2) <span style="color: #268bd2;">=</span> (value e1) <span style="color: #268bd2;">-</span> (value e2)
+
+<span style="color: #268bd2;">increment</span> e <span style="color: #268bd2;">=</span> (value e) <span style="color: #268bd2;">+</span> 1
+</pre>
+</div>
+
+<p class="fragment roll-in">
+Notice all the necessary changes are <i>additions</i>, and changes in the
+new function are localized.
+</p>
+
+</section>
+<section>
+
+<div class="org-src-container">
+<label class="org-src-name">Adding a new Case…</label>
+<pre  class="src src-haskell"><span style="color: #859900; font-weight: bold;">data</span> <span style="color: #b58900;">Expression</span> <span style="color: #268bd2;">=</span> <span style="color: #b58900;">Number</span> <span style="color: #b58900;">Int</span>
+                <span style="color: #268bd2;">|</span> <span style="color: #b58900;">Add</span> <span style="color: #b58900;">Expression</span> <span style="color: #b58900;">Expression</span>
+                <span style="color: #268bd2;">|</span> <span style="color: #b58900;">Sub</span> <span style="color: #b58900;">Expression</span> <span style="color: #b58900;">Expression</span>
+                <span style="color: #268bd2;">|</span> <span style="color: #b58900;">Mul</span> <span style="color: #b58900;">Expression</span> <span style="color: #b58900;">Expression</span>
+
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Number</span> e)  <span style="color: #268bd2;">=</span> e
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Add</span> e1 e2) <span style="color: #268bd2;">=</span> (value e1) <span style="color: #268bd2;">+</span> (value e2)
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Sub</span> e1 e2) <span style="color: #268bd2;">=</span> (value e1) <span style="color: #268bd2;">-</span> (value e2)
+<span style="color: #268bd2;">value</span> (<span style="color: #b58900;">Mul</span> e1 e2) <span style="color: #268bd2;">=</span> (value e1) <span style="color: #268bd2;">*</span> (value e2)
+</pre>
+</div>
+
+<p class="fragment roll-in">
+Extending the data-type requires changes to <i>any</i> function that
+operates over that type.
+</p>
+
+</section>
+<section id="sec-3-2" >
+
+<h3>In Functional Programming</h3>
+<p>
+FP tends to optimize adding functions over the datatype at the expense
+of easily adding new cases.
+</p>
+
+</section>
+<section id="sec-3-3" >
+
+<h3>In Object-Oriented Programming</h3>
+<p>
+The trade-off is reversed: it is easier to add new cases (sub-type
+polymorphism), but difficult to add new functions that operate over
+the entire data-type.
+</p>
+</section>
+
+</section>
+<section>
+<section id="sec-4" >
+
+<h2>Elements of Logical Programming</h2>
+</section>
+<section id="sec-4-1" >
+
+<h3>Unification</h3>
+<div class="org-src-container">
+
+<pre  class="src src-scheme"><span style="color: #696969;">(</span>load <span style="color: #2aa198;">"mk.scm"</span><span style="color: #696969;">)</span>
+<span style="color: #696969;">(</span>load <span style="color: #2aa198;">"mkprelude.scm"</span><span style="color: #696969;">)</span>
+
+<span style="color: #696969;">(</span>run* <span style="color: #696969;">(</span>q<span style="color: #696969;">)</span>
+     <span style="color: #696969;">(</span>== 3 q<span style="color: #696969;">))</span>
+
+<span style="color: #696969;">(</span>run* <span style="color: #696969;">(</span>q<span style="color: #696969;">)</span>
+     <span style="color: #696969;">(</span>== q 3<span style="color: #696969;">))</span>
+</pre>
+</div>
+
+<p>
+The Rules of Unification:
+</p>
+<ol class="org-ol">
+<li>If <code>x</code> is <b>fresh</b>, <code>(≡ v x)</code>  succeeds and associates <code>x</code> with <code>v</code>.
+</li>
+<li><code>(≡ v w)</code> is the same as <code>(≡ w v)</code>.<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup>
+</li>
+</ol>
+
+
+</section>
+<section id="sec-4-2" >
+
+<h3>Disjunction</h3>
+<blockquote>
+<p>
+“To get more values from conde, pretend that the successful conde line
+has failed, refreshing all variables that got an association from
+that line.”
+</p>
+</blockquote>
+
+<div class="org-src-container">
+
+<pre  class="src src-scheme"><span style="color: #696969;">(</span>run* <span style="color: #696969;">(</span>r<span style="color: #696969;">)</span>
+  <span style="color: #696969;">(</span>fresh <span style="color: #696969;">(</span>x y<span style="color: #696969;">)</span>
+    <span style="color: #696969;">(</span>conde
+      <span style="color: #696969;">((</span>== 'split x<span style="color: #696969;">)</span> <span style="color: #696969;">(</span>== 'pea y<span style="color: #696969;">))</span>
+      <span style="color: #696969;">((</span>== 'navy x<span style="color: #696969;">)</span>  <span style="color: #696969;">(</span>== 'bean y<span style="color: #696969;">))</span>
+      <span style="color: #696969;">(</span><span style="color: #859900; font-weight: bold;">else</span> fail<span style="color: #696969;">))</span>
+    <span style="color: #696969;">(</span>== <span style="color: #696969;">(</span>cons x <span style="color: #696969;">(</span>cons y '<span style="color: #696969;">()))</span> r<span style="color: #696969;">)))</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><span style="color: #586e75;">; </span><span style="color: #586e75;">((split pea) (navy bean))</span>
+</pre>
+</div>
+
+</section>
+<section id="sec-4-2-1" >
+
+<h4>(In Prolog)</h4>
+<p>
+Prolog defines things a bit differently.  Prolog segregates the
+concepts of <i>Facts</i> and <i>Queries</i>.
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">soup</span>( split, pea ).
+<span style="color: #268bd2;">soup</span>( navy, bean ).
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #859900; font-weight: bold;">|</span> ?- soup( <span style="color: #268bd2;">X</span>, <span style="color: #268bd2;">Y</span> ).
+<span style="color: #268bd2;">soup</span>( <span style="color: #268bd2;">X</span>, <span style="color: #268bd2;">Y</span> ).
+
+<span style="color: #268bd2;">X</span> = split
+<span style="color: #268bd2;">Y</span> = pea
+
+<span style="color: #268bd2;">X</span> = navy
+<span style="color: #268bd2;">Y</span> = bean
+</pre>
+</div>
+
+
+</section>
+<section id="sec-4-3" >
+
+<h3>Search</h3>
+<img src="images/LogicSearch.png" alt="LogicSearch.png" />
+
+<div class="org-src-container">
+
+<pre  class="src src-scheme"><span style="color: #696969;">(</span>fresh <span style="color: #696969;">(</span>x y<span style="color: #696969;">)</span>
+       <span style="color: #696969;">(</span>conde
+        <span style="color: #696969;">((</span>== 'split x<span style="color: #696969;">)</span> <span style="color: #696969;">(</span>== 'pea y<span style="color: #696969;">))</span>
+        <span style="color: #696969;">((</span>== 'navy x<span style="color: #696969;">)</span>  <span style="color: #696969;">(</span>== 'bean y<span style="color: #696969;">))</span>
+        <span style="color: #696969;">(</span><span style="color: #859900; font-weight: bold;">else</span> fail<span style="color: #696969;">)))</span>
+</pre>
+</div>
+</section>
+
+</section>
+<section>
+<section id="sec-5" >
+
+<h2>Prolog</h2>
+<p>
+General purpose logic programming language developed in 1972.
+</p>
+
+</section>
+<section id="sec-5-1" >
+
+<h3>Atoms</h3>
+<div class="org-src-container">
+
+<pre  class="src src-prolog">1.                              <span style="color: #586e75;">% numbers</span>
+atom.                           <span style="color: #586e75;">% simple</span>
+<span style="color: #2aa198;">'an atom'</span>.                      <span style="color: #586e75;">% quoted</span>
+</pre>
+</div>
+
+</section>
+<section id="sec-5-2" >
+
+<h3>Variables</h3>
+<p>
+Begin with an Upper-case letter.
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">X</span>.
+<span style="color: #268bd2;">X1</span>.
+<span style="color: #268bd2;">C_3</span>.
+</pre>
+</div>
+
+</section>
+<section id="sec-5-3" >
+
+<h3>Facts</h3>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">cat</span>( sylvester ) :- true.    <span style="color: #586e75;">% also called a `complex term`</span>
+<span style="color: #268bd2;">cat</span>( tom ).                  <span style="color: #586e75;">% synonymous with above</span>
+
+<span style="color: #268bd2;">dog</span>( bill ).
+<span style="color: #268bd2;">mouse</span>( jerry ).
+</pre>
+</div>
+
+
+</section>
+<section id="sec-5-4" >
+
+<h3>Rules</h3>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">animal</span>( <span style="color: #268bd2;">X</span> ) :- cat( <span style="color: #268bd2;">X</span> ).     <span style="color: #586e75;">% Given X is a cat,</span>
+                             <span style="color: #586e75;">% X is an animal.</span>
+</pre>
+</div>
+
+</section>
+<section id="sec-5-5" >
+
+<h3>Terms may be recursive</h3>
+<p>
+Should this <i>unify</i>?
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">father</span>(<span style="color: #268bd2;">X</span>)  =  <span style="color: #268bd2;">X</span>.
+</pre>
+</div>
+
+<p class="fragment roll-in">
+Yes.
+</p>
+
+<p class="fragment roll-in">
+To what?
+</p>
+
+<p class="fragment roll-in">
+…it depends. The expression is defined to be unifiable, but its
+display is implementation-dependent. <sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>
+</p>
+
+</section>
+<section id="sec-5-6" >
+
+<h3>Queries</h3>
+<div class="org-src-container">
+
+<pre  class="src src-prolog">?- cat( <span style="color: #268bd2;">X</span> ).
+<span style="color: #268bd2;">X</span> = sylvester
+<span style="color: #268bd2;">X</span> = tom
+</pre>
+</div>
+
+</section>
+<section id="sec-5-7" >
+
+<h3>Lists</h3>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #859900; font-weight: bold;">[</span>1, 2, a<span style="color: #859900; font-weight: bold;">]</span>.
+<span style="color: #859900; font-weight: bold;">[</span>1, a( 1, 2 ), 3<span style="color: #859900; font-weight: bold;">]</span>.
+<span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">A</span>, b, c<span style="color: #859900; font-weight: bold;">]</span>.
+
+<span style="color: #859900; font-weight: bold;">|</span> ?- <span style="color: #859900; font-weight: bold;">[</span>1,2,3<span style="color: #859900; font-weight: bold;">]</span> = <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">A</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">Tail</span><span style="color: #859900; font-weight: bold;">]</span>.
+<span style="color: #268bd2;">A</span> = 1
+<span style="color: #268bd2;">Tail</span> = <span style="color: #859900; font-weight: bold;">[</span>2,3<span style="color: #859900; font-weight: bold;">]</span>
+
+<span style="color: #859900; font-weight: bold;">|</span> ?- <span style="color: #859900; font-weight: bold;">[</span>1,2,3<span style="color: #859900; font-weight: bold;">]</span> = <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">A</span><span style="color: #859900; font-weight: bold;">|[</span><span style="color: #268bd2;">B</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">Tail</span><span style="color: #859900; font-weight: bold;">]]</span>.
+
+<span style="color: #268bd2;">A</span> = 1
+<span style="color: #268bd2;">B</span> = 2
+<span style="color: #268bd2;">Tail</span> = <span style="color: #859900; font-weight: bold;">[</span>3<span style="color: #859900; font-weight: bold;">]</span>
+</pre>
+</div>
+
+</section>
+<section id="sec-5-8" >
+
+<h3>Append</h3>
+<p>
+Let's consider a definition of Prolog's append/3: <sup><a id="fnr.4.100" class="footref" href="#fn.4">4</a></sup>
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">append</span>( <span style="color: #859900; font-weight: bold;">[]</span>, <span style="color: #268bd2;">L</span>, <span style="color: #268bd2;">L</span> ).
+<span style="color: #268bd2;">append</span>( <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">H</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">T</span><span style="color: #859900; font-weight: bold;">]</span>, <span style="color: #268bd2;">L2</span>, <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">H</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">L3</span><span style="color: #859900; font-weight: bold;">]</span> ) :- append( <span style="color: #268bd2;">T</span>, <span style="color: #268bd2;">L2</span>, <span style="color: #268bd2;">L3</span> ).
+</pre>
+</div>
+
+</section>
+<section id="sec-5-9" >
+
+<h3>Using Append</h3>
+<p>
+Because of the nature of logical programming, append/3
+can be used to <i>break-up</i> lists:
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">append</span>( <span style="color: #268bd2;">X</span>, <span style="color: #268bd2;">Y</span>, <span style="color: #859900; font-weight: bold;">[</span>a,b,c,d<span style="color: #859900; font-weight: bold;">]</span> ).
+
+<span style="color: #268bd2;">X</span>  =  <span style="color: #859900; font-weight: bold;">[]</span>
+<span style="color: #268bd2;">Y</span>  =  <span style="color: #859900; font-weight: bold;">[</span>a,b,c,d<span style="color: #859900; font-weight: bold;">]</span>
+
+<span style="color: #268bd2;">X</span>  =  <span style="color: #859900; font-weight: bold;">[</span>a<span style="color: #859900; font-weight: bold;">]</span>
+<span style="color: #268bd2;">Y</span>  =  <span style="color: #859900; font-weight: bold;">[</span>b,c,d<span style="color: #859900; font-weight: bold;">]</span>
+
+<span style="color: #268bd2;">X</span>  =  <span style="color: #859900; font-weight: bold;">[</span>a,b<span style="color: #859900; font-weight: bold;">]</span>
+<span style="color: #268bd2;">Y</span>  =  <span style="color: #859900; font-weight: bold;">[</span>c,d<span style="color: #859900; font-weight: bold;">]</span>
+
+<span style="color: #268bd2;">X</span>  =  <span style="color: #859900; font-weight: bold;">[</span>a,b,c<span style="color: #859900; font-weight: bold;">]</span>
+<span style="color: #268bd2;">Y</span>  =  <span style="color: #859900; font-weight: bold;">[</span>d<span style="color: #859900; font-weight: bold;">]</span>
+
+<span style="color: #268bd2;">X</span>  =  <span style="color: #859900; font-weight: bold;">[</span>a,b,c,d<span style="color: #859900; font-weight: bold;">]</span>
+<span style="color: #268bd2;">Y</span>  =  <span style="color: #859900; font-weight: bold;">[]</span>
+</pre>
+</div>
+
+<p>
+Goals in a logic language can be run <i>backward</i>.
+</p>
+
+</section>
+<section id="sec-5-10" >
+
+<h3>Permutation</h3>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">permutation</span>( <span style="color: #859900; font-weight: bold;">[</span>1,2,3<span style="color: #859900; font-weight: bold;">]</span>, <span style="color: #268bd2;">L</span> ).
+
+<span style="color: #268bd2;">L</span> = <span style="color: #859900; font-weight: bold;">[</span>1,2,3<span style="color: #859900; font-weight: bold;">]</span>
+<span style="color: #268bd2;">L</span> = <span style="color: #859900; font-weight: bold;">[</span>1,3,2<span style="color: #859900; font-weight: bold;">]</span>
+<span style="color: #268bd2;">L</span> = <span style="color: #859900; font-weight: bold;">[</span>2,1,3<span style="color: #859900; font-weight: bold;">]</span>
+<span style="color: #268bd2;">L</span> = <span style="color: #859900; font-weight: bold;">[</span>2,3,1<span style="color: #859900; font-weight: bold;">]</span>
+<span style="color: #268bd2;">L</span> = <span style="color: #859900; font-weight: bold;">[</span>3,1,2<span style="color: #859900; font-weight: bold;">]</span>
+<span style="color: #268bd2;">L</span> = <span style="color: #859900; font-weight: bold;">[</span>3,2,1<span style="color: #859900; font-weight: bold;">]</span>
+
+<span style="color: #268bd2;">permutation</span>( <span style="color: #859900; font-weight: bold;">[</span>1, <span style="color: #268bd2;">A</span>, 3<span style="color: #859900; font-weight: bold;">]</span>, <span style="color: #859900; font-weight: bold;">[</span>3, 2, 1<span style="color: #859900; font-weight: bold;">]</span> ).
+
+<span style="color: #268bd2;">A</span> = 2
+</pre>
+</div>
+
+<p>
+<i>Permutation</i>, in Prolog, can be defined in terms of <i>append</i>.
+</p>
+</section>
+
+</section>
+<section>
+<section id="sec-6" >
+
+<h2>Logic Programming Applied</h2>
+</section>
+<section id="sec-6-1" >
+
+<h3>To Computer Science</h3>
+<ul class="org-ul">
+<li>Compilers
+</li>
+<li>Type inferencers and verifiers
+</li>
+<li>Refactoring tools
+</li>
+<li>Natural language processing
+</li>
+<li>Theorem Solvers/Provers
+</li>
+</ul>
+
+</section>
+<section id="sec-6-2" >
+
+<h3>To programming</h3>
+<ul class="org-ul">
+<li>Rules engines
+</li>
+<li>3D graphics (scene graph construction and validation)
+</li>
+</ul>
+
+
+</section>
+<section id="sec-6-3" >
+
+<h3>To …Alchemy?</h3>
+<img src="images/SR_Alchemy_Lab.jpg" alt="Skyrim Alchemy" title="Action!" height="500px" />
+
+</section>
+<section id="sec-6-3-1" >
+
+<h4>Effects (Facts)</h4>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">effect</span>( blisterwort, damage_stamina ).
+<span style="color: #268bd2;">effect</span>( blisterwort, fortify_smithing ).
+<span style="color: #268bd2;">effect</span>( blisterwort, frenzy ).
+<span style="color: #268bd2;">effect</span>( blisterwort, restore_health ).
+</pre>
+</div>
+
+</section>
+<section id="sec-6-3-2" >
+
+<h4>Potions (Rules)</h4>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">potion</span>( <span style="color: #268bd2;">IngredientA</span>, <span style="color: #268bd2;">IngredientB</span> ) :-
+    potion( <span style="color: #268bd2;">IngredientA</span>, <span style="color: #268bd2;">IngredientB</span>, <span style="color: #268bd2;">_</span> ).
+
+<span style="color: #268bd2;">potion</span>( <span style="color: #268bd2;">IngredientA</span>, <span style="color: #268bd2;">IngredientB</span>, <span style="color: #268bd2;">Effect</span> ) :-
+    effect( <span style="color: #268bd2;">IngredientA</span>, <span style="color: #268bd2;">Effect</span> ),
+    effect( <span style="color: #268bd2;">IngredientB</span>, <span style="color: #268bd2;">Effect</span> ),
+    <span style="color: #268bd2;">IngredientA</span> \= <span style="color: #268bd2;">IngredientB</span>.
+</pre>
+</div>
+
+</section>
+<section id="sec-6-3-3" >
+
+<h4>What Can I Mix With Wheat?</h4>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #859900; font-weight: bold;">|</span> ?- potion( wheat, <span style="color: #268bd2;">B</span> ).
+
+<span style="color: #268bd2;">B</span> = creep_cluster ? <span style="color: #859900; font-weight: bold;">;</span>
+
+<span style="color: #268bd2;">B</span> = daedra_heart ? <span style="color: #859900; font-weight: bold;">;</span>
+
+<span style="color: #268bd2;">B</span> = frost_mirriam ? <span style="color: #859900; font-weight: bold;">;</span>
+
+<span style="color: #268bd2;">B</span> = giants_toe ?
+</pre>
+</div>
+
+</section>
+<section id="sec-6-3-4" >
+
+<h4>…and What Will I Get?</h4>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #859900; font-weight: bold;">|</span> ?- potion( wheat, <span style="color: #268bd2;">B</span>, <span style="color: #268bd2;">E</span> ).
+
+<span style="color: #268bd2;">B</span> = creep_cluster
+<span style="color: #268bd2;">E</span> = damage_stamina_regen ? <span style="color: #859900; font-weight: bold;">;</span>
+
+<span style="color: #268bd2;">B</span> = daedra_heart
+<span style="color: #268bd2;">E</span> = damage_stamina_regen ? <span style="color: #859900; font-weight: bold;">;</span>
+
+<span style="color: #268bd2;">B</span> = frost_mirriam
+<span style="color: #268bd2;">E</span> = damage_stamina_regen ?
+
+(1 ms) yes
+</pre>
+</div>
+
+
+</section>
+<section id="sec-6-3-5" >
+
+<h4>Lists</h4>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #268bd2;">mixes</span>( <span style="color: #859900; font-weight: bold;">[]</span>, <span style="color: #268bd2;">_</span>, <span style="color: #268bd2;">_</span>, <span style="color: #268bd2;">_</span> ) :- fail.
+<span style="color: #268bd2;">mixes</span>( <span style="color: #268bd2;">L</span>, <span style="color: #268bd2;">Ia</span>, <span style="color: #268bd2;">Ib</span>, <span style="color: #268bd2;">E</span> ) :-
+    permutation( <span style="color: #268bd2;">L</span>, <span style="color: #859900; font-weight: bold;">[</span><span style="color: #268bd2;">Ia</span><span style="color: #859900; font-weight: bold;">|[</span><span style="color: #268bd2;">Ib</span><span style="color: #859900; font-weight: bold;">|</span><span style="color: #268bd2;">_</span><span style="color: #859900; font-weight: bold;">]]</span> ),
+    potion( <span style="color: #268bd2;">Ia</span>, <span style="color: #268bd2;">Ib</span>, <span style="color: #268bd2;">E</span> ).
+</pre>
+</div>
+
+</section>
+<section id="sec-6-3-6" >
+
+<h4>What Can I Make With This Stuff?</h4>
+<div class="org-src-container">
+
+<pre  class="src src-prolog"><span style="color: #859900; font-weight: bold;">|</span> ?- mixes( <span style="color: #859900; font-weight: bold;">[</span>wheat, blisterwort, daedra_heart<span style="color: #859900; font-weight: bold;">]</span>, <span style="color: #268bd2;">A</span>, <span style="color: #268bd2;">B</span>, <span style="color: #268bd2;">E</span> ).
+
+<span style="color: #268bd2;">A</span> = wheat
+<span style="color: #268bd2;">B</span> = blisterwort
+<span style="color: #268bd2;">E</span> = restore_health ? <span style="color: #859900; font-weight: bold;">;</span>
+
+<span style="color: #268bd2;">A</span> = wheat
+<span style="color: #268bd2;">B</span> = daedra_heart
+<span style="color: #268bd2;">E</span> = damage_stamina_regen ? <span style="color: #859900; font-weight: bold;">;</span>
+
+<span style="color: #268bd2;">A</span> = wheat
+<span style="color: #268bd2;">B</span> = daedra_heart
+<span style="color: #268bd2;">E</span> = restore_health ?
+
+yes
+</pre>
+</div>
+</section>
+
+
+</section>
+<section>
+<section id="sec-7" >
+
+<h2>Datalog</h2>
+<p>
+A dialect of Prolog for database queries.
+</p>
+
+</section>
+<section id="sec-7-1" >
+
+<h3>Facts (Datom)</h3>
+<p>
+Datomic stores its data in Sets of Tuples of the form:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-clojure">[entity attribute value transaction]
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><span style="color: #586e75;">; </span><span style="color: #586e75;">An example database</span>
+[[sally <span style="color: #268bd2; font-weight: bold;">:age</span>  32]
+ [bob   <span style="color: #268bd2; font-weight: bold;">:age</span>  32]
+ [phil  <span style="color: #268bd2; font-weight: bold;">:age</span>  19]
+ [sally <span style="color: #268bd2; font-weight: bold;">:eyes</span> blue]
+ [bob   <span style="color: #268bd2; font-weight: bold;">:eyes</span> hazel]
+ [phil  <span style="color: #268bd2; font-weight: bold;">:eyes</span> brown]]
+</pre>
+</div>
+
+</section>
+<section id="sec-7-2" >
+
+<h3>Queries</h3>
+<p>
+Variables are prefixed with a "?"
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-clojure">[<span style="color: #268bd2; font-weight: bold;">:find</span> ?e <span style="color: #268bd2; font-weight: bold;">:where</span> [?e <span style="color: #268bd2; font-weight: bold;">:age</span> 32]]
+</pre>
+</div>
+
+<blockquote>
+<p>
+Find the entity, ?e, that unifies with the tuple [?e :age 32].
+</p>
+</blockquote>
+
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><span style="color: #586e75;">;; </span><span style="color: #586e75;">Result:</span>
+[[bob], [sally]]
+</pre>
+</div>
+
+</section>
+<section id="sec-7-3" >
+
+<h3>Unification</h3>
+<p>
+Once a variable is unified, it keeps its value in all clauses:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-clojure">[<span style="color: #268bd2; font-weight: bold;">:find</span> ?e ?c
+ <span style="color: #268bd2; font-weight: bold;">:where</span> [?e <span style="color: #268bd2; font-weight: bold;">:age</span> 32] [?e <span style="color: #268bd2; font-weight: bold;">:eyes</span> ?c]]
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="fragment roll-in"><span style="color: #586e75;">;; </span><span style="color: #586e75;">Result:</span>
+[[bob hazel], [sally blue]]
+</pre>
+</div>
+
+</section>
+<section id="sec-7-4" >
+
+<h3>Other Features</h3>
+<ul class="org-ul">
+<li>Rules
+</li>
+<li>Built-in Functions and Predicates
+</li>
+<li>Calls to Java or Clojure functions
+</li>
+<li>Multiple input sources (query two dbs at once)
+</li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section id="sec-8" >
+
+<h2>Resources</h2>
+<ul class="org-ul">
+<li><i>The Reasoned Schemer</i>
+</li>
+<li><i>Learn Prolog Now</i>
+</li>
+<li>Daniel Spiewak - <i>Living in a Post-Functional World</i>
+</li>
+<li>Wikipedia - <i>Expression Problem</i>
+</li>
+<li><i>Datomic Queries and Rules with Datalog</i>
+</li>
+<li>Gerald Sussman - <i>We Really Don't Know How to Compute!</i>
+</li>
+</ul>
+</section>
+</div>
+</div>
+<script src="./reveal.js/lib/js/head.min.js"></script>
+<script src="./reveal.js/js/reveal.min.js"></script>
+<script>
+
+        		// Full list of configuration options available here:
+        		// https://github.com/hakimel/reveal.js#configuration
+        		Reveal.initialize({
+        			controls: true,
+        			progress: true,
+        			history: false,
+        			center: true,
+                                slideNumber: true,
+        			rollingLinks: false,
+        			keyboard: true,
+        			overview: true,
+        			 // slide width
+        			 // slide height
+        			 // slide margin
+        			 // slide minimum scaling factor
+        			 // slide maximum scaling factor
+
+
+        			theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        			transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+        			transitionSpeed: 'default',
+
+        			// Optional libraries used to extend on reveal.js
+        			dependencies: [
+        				{ src: './reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } }
+        				,{ src: './reveal.js/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } }
+        				,{ src: './reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } }
+        				,{ src: './reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        				,{ src: './reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } }
+        				,{ src: './reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        				// { src: './reveal.js/plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+        				// { src: './reveal.js/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+
+        			]
+        		});
+</script>
+</body>
+</html>
