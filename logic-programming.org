@@ -342,10 +342,8 @@ Begin with an Upper-case letter.
 
 Should this /unify/?
 
-# `=` is Prolog's unification operator.
-
 #+BEGIN_SRC prolog
-  father(X)  =  X.
+  father(X)  =  X.             % `=` is Prolog's unification operator.
 #+END_SRC
 
 #+ATTR_REVEAL: :frag roll-in
